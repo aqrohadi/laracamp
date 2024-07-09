@@ -14,11 +14,11 @@
             </div>
         </div>
         <div class="row my-5">
-            {{-- {{$checkoutsr}} dEBUG --}}
+            {{-- {{$checkouts}} dEBUG --}}
             @include('components.alert')
             <table class="table">
                 <tbody>
-                    @forelse ($checkoutsr as $checkout)
+                    @forelse ($checkouts as $checkout)
                     <tr class="align-middle">
                         <td width="18%">
                             <img src="{{asset('images/item_bootcamp.png')}}" height="120" alt="">
