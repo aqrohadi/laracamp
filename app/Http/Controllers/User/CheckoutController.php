@@ -72,6 +72,8 @@ class CheckoutController extends Controller
         $user->email = $data['email'];
         $user->name = $data['name'];
         $user->occupation = $data['occupation'];
+        $user->phone = $data['phone'];
+        $user->address = $data['address'];
         $user->save();
 
         // create checkout
@@ -189,7 +191,7 @@ class CheckoutController extends Controller
 
         try {
             // Get Snap Payment Page URL
-            $paymentUrl = \Midtrans\Snap::createTransaction($params)->redirect_url;
+            $paymentUrl = \Midtrans\Snap::createTransaction($midtrans_params)->redirect_url;
             $checkout->midtrans_url = $paymentUrl;
             $checkout->save();
 
@@ -201,12 +203,14 @@ class CheckoutController extends Controller
 
     public function midtransCallback(Request $request)
     {
-        $notif = new \Midtrans\Notification();
+        // $notif = new \Midtrans\Notification();
 
-        $transaction = $notif->transaction_status;
+        $notif = $request->method() == 'POST' ? new Midtrans\Notification() : Midtrans\Transaction::status($request->order_id);
+
+        $transaction_status = $notif->transaction_status;
         $fraud = $notif->fraud_status;
 
-        $checkout_id = explode('-', $notif->order_id) [0];
+        $checkout_id = explode('-', $notif->order_id)[0];
         $checkout = Checkout::find($checkout_id);
 
         if ($transaction_status == 'capture') {
@@ -219,7 +223,7 @@ class CheckoutController extends Controller
                 $checkout->payment_status = 'paid';
             }
         }
-        else if ($transaction == 'cancel') {
+        else if ($transaction_status == 'cancel') {
             if ($fraud == 'challenge') {
                 // TODO Set payment status in merchant's database to 'failure'
                 $checkout->payment_status = 'failed';
@@ -230,19 +234,19 @@ class CheckoutController extends Controller
                 $checkout->payment_status = 'failed';
             }
         }
-        else if ($transaction == 'deny') {
+        else if ($transaction_status == 'deny') {
             // TODO Set payment status in merchant's database to 'failure'
             $checkout->payment_status = 'failed';
         }
-        else if ($transaction == 'settlement') {
+        else if ($transaction_status == 'settlement') {
             // TODO Set payment status in merchant's database to 'failure'
             $checkout->payment_status = 'paid';
         }
-        else if ($transaction == 'pending') {
+        else if ($transaction_status == 'pending') {
             // TODO Set payment status in merchant's database to 'failure'
             $checkout->payment_status = 'pending';
         }
-        else if ($transaction == 'expired') {
+        else if ($transaction_status == 'expired') {
             // TODO Set payment status in merchant's database to 'failure'
             $checkout->payment_status = 'failed';
         }
