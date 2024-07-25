@@ -203,10 +203,20 @@ class CheckoutController extends Controller
             "shipping_address" => $userData,
         ];
 
+        // URL Redirects
+        // $unfinishRedirectUrl = env('APP_URL') . '/payment/unfinish';
+        // $errorRedirectUrl = env('APP_URL') . '/payment/error';
+        $successRedirectUrl = env('APP_URL') . '/user/dashboard';
+
         $midtrans_params = [
             'transaction_details' => $transaction_details,
             'customer_details' => $customer_details,
             'item_details' => $item_details,
+            'callbacks' => [
+                'finish' => $successRedirectUrl,
+                // 'unfinish' => $unfinishRedirectUrl,
+                // 'error' => $errorRedirectUrl,
+            ],
         ];
 
         try {
